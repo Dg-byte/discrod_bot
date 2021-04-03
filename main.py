@@ -1,7 +1,14 @@
 import conf
 import discord
 
-client = discord.Client()
+
+
+#Настраиваем расширенный доступ Intesnese
+intense = discord.Intents.default()
+intense.members = True
+
+#Создаем подключение бота
+client = discord.Client(intents = intense)
 
 @client.event
 async def on_message(message):
@@ -26,25 +33,41 @@ async def on_message(message):
         msg = None
         # Отправляем сообщение в канал Channel используя метод send
      
-
-        # 1.   /hello - просто сообщение
-
-
+        command = message.content.split(" ", maxsplit=1)
+        #1. /hello - просто сообщение
         if message.content == "/hello":
             msg = f'Hello, {message.author.name}. I am {client.user.name}'
         
-        # 2.   /about_me - сообщение  пользователю по его параметрам id/name (если есть ник то добавить "твой ник nick")        
+        #2. /about_me - сообщение  пользователю по его параметрам id/name (если есть ник то добавить "твой ник nick")        
         elif message.content == "/about_me":
             msg = f'Your id is {message.author.id}'
             if message.author.nick:
                 msg=f'and your nick is {message.author.nick}'
 
                 
-        # *3. /repeat [] - повторить за пользователем 
- #       elif message.content == "/repeat {message.author.msg}": 
-  #          msg = f'{message.author.msg}'
-        
-        
+        #3. /repeat [] - повторить за пользователем 
+        elif command[0] == "/repeat":
+            msg = command[1]
+
+        #4. /get_member {id/name} - берём инфу по пользователю по типу about_me {если пусто != обрабатываем ошибку}
+        elif command[0] == "/get_member":
+            command.remove(command[0])
+            name = " ".join(command)
+            if name != "":
+                if name == client.user.name:
+                    msg = f'His name is {client.user.name}' 
+                elif name == client.user.id:
+                    msg = f'His id is {client.user.id}'
+            elif name == "":
+                msg = f'There is no one who has that id or name'
+
+        #5. /get_members  - список всех пользователй по "1. name {nick} id"       *(через webhook)
+        elif message.content == "/get_members":
+            msg = ""
+            if message.author.guild.name == "Bots":
+                for idx, member in list(enumerate(message.author.guild.members)):
+                    msg += f'{idx+1}. {member.name} { f"[{member.nick}]" if member.nick else "" } - {member.id}\n'
+                
         # Отправляем сообщение если оно есть
         if msg != None:
             await message.channel.send(msg)

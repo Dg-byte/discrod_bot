@@ -1,11 +1,13 @@
 import conf
 import discord
 from discord.ext import commands
+import img_handler as imhl
+import os
 #
 #
 #
 ##Настраиваем расширенный доступ Intesnese
-#intense = discord.Intents.default()
+intense = discord.Intents.default()
 #intense.members = True
 #
 ##Создаем подключение бота
@@ -74,16 +76,16 @@ from discord.ext import commands
 #                    msg += f'{idx+1}. {channel.name} - {channel.id}\n'
 #                    
        #7. /goto {id/name} - подключение бота в определенный канал (по умолчанию бот подключен в свой канал)          
-       elif command[0] == "/goto":
-           name_channel = command[1]
-           for _, channel in list(enumerate(message.author.guild.channels)):
-               if name_channel == channel.name or int(name_channel) == channel.id:
-                   message.channel.id = name_channel
-                   print("Ok")
-                   msg = f"Channel is changed"
-                   break
-               else: 
-                   msg = f"channel doesn't exist"
+#      elif command[0] == "/goto":
+#          name_channel = command[1]
+#          for _, channel in list(enumerate(message.author.guild.channels)):
+#              if name_channel == channel.name or int(name_channel) == channel.id:
+#                  message.channel.id = name_channel
+#                  print("Ok")
+#                  msg = f"Channel is changed"
+#                  break
+#              else: 
+#                  msg = f"channel doesn't exist"
 #                     
 #
 #        # Отправляем сообщение если оно есть
@@ -91,15 +93,95 @@ from discord.ext import commands
 #            await message.channel.send(msg)
 #client.run(conf.bot_token)
 
-bot = commands.Bot(command_prefix = "!")
+#Объявляем бота с префиксом и расширенными правами
+bot = commands.Bot(command_prefix = "!", intents = intense)
 
-@bot.command(name = "hello")
+channel = 825309140045529108
 
-async def command_hello(ctx, *args): 
+@bot.command(name= "get_member")
+async def command_get_member(ctx, member: discord.Member=None):
+    msg = None
+    global channel
+    if ctx.channel.id == channel:
 
-    print(ctx)
-    if ctx.channel.id == 825309140045529108:
-        msg= f'Hello to you! You said: "{" ".join(args)} "'
+        if member:
+            msg = f'Member {member.name} {"({member.nick})" if member.nick else ""} - {member.id}'
+
+        if msg == None:
+            msg = "error"
+
         await ctx.channel.send(msg)
+
+
+@bot.command(name= "mk")
+async def command_mk(ctx, fighter1: discord.Member=None, fighter2: discord.Member=None):
+    msg = None
+    global channel
+    if ctx.channel.id == channel:
+
+        if fighter1 and fighter2:
+            #print(fighter1.avatar_url, fighter2.avatar_url)
+            #Передаем ответ разработчику
+            await imhl.vs_create(fighter1.avatar_url, fighter2.avatar_url)
+
+            #msg = f'The first fighter is {fighter1.name}, the second fighter is {fighter2.name}\n Fight!'
+            await ctx.channel.send(file=discord.File(os.path.join("./img/result.png")))
+
+        if msg == None:
+            msg = "error"
+
+    #await ctx.channel.send(msg)
+
+
+
+
+
+
+#@bot.command(name = "hello")
+#async def command_hello(ctx, *args): 
+#
+#    print(ctx)
+#    if ctx.channel.id == 825309140045529108:
+#        msg= f'Hello to you! You said: "{" ".join(args)} "'
+#        await ctx.channel.send(msg)
+#
+#@bot.command(name= "about_me")
+#async def command_about_me(ctx, *args):
+#
+#    
+#    if ctx.channel.id == 825309140045529108:
+#
+#        msg = f'Your id is {ctx.author.id}'
+#        if ctx.author.nick:
+#            msg = f'and your nick is {ctx.author.nick}'
+#    await ctx.channel.send(msg)
+#
+#@bot.command(name= "repeat")
+#async def command_repeat(ctx, *args):
+#
+#    
+#    if ctx.channel.id == 825309140045529108:
+#        if args != "":
+#            msg = f'{" ".join(args)}'
+#        else:
+#            msg = f"You didn't write anything. Nothing to repeat"
+#    await ctx.channel.send(msg)
+#
+#@bot.command(name = "get_members")
+#async def command_get_members(ctx, *args):
+#
+#    if ctx.channel.id == 825309140045529108:
+#        msg = ""        
+#        if ctx.author.guild.name == "Bots":
+#            
+#            for idx, member in list(enumerate(ctx.author.guild.members)):
+#                print(idx)
+#                msg += f'{idx+1}. {member.name} {f"[{member.nick}]" if member.nick else ""} - {member.id}\n'
+#    await ctx.channel.send(msg)
+        #            msg = ""
+#            if message.author.guild.name == "Bots":
+#                for idx, member in list(enumerate(message.author.guild.members)):
+#                    msg += f'{idx+1}. {member.name} { f"[{member.nick}]" if member.nick else "" } - {member.id}\n'
+
 
 bot.run(conf.bot_token)
